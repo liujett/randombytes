@@ -1,17 +1,22 @@
 'use strict'
 
-function oldBrowser () {
-  throw new Error('Secure random number generation is not supported by this browser.\nUse Chrome, Firefox or Internet Explorer 11')
-}
+// function oldBrowser () {
+//   throw new Error('Secure random number generation is not supported by this browser.\nUse Chrome, Firefox or Internet Explorer 11')
+// }
 
 var Buffer = require('safe-buffer').Buffer
-var crypto = global.crypto || global.msCrypto
+// var crypto = global.crypto || global.msCrypto
 
-if (crypto && crypto.getRandomValues) {
-  module.exports = randomBytes
-} else {
-  module.exports = oldBrowser
-}
+var MersenneTwister = require('mersenne-twister')
+
+var twister = new MersenneTwister(Math.random()*Number.MAX_SAFE_INTEGER)
+
+
+// if (crypto && crypto.getRandomValues) {
+  
+// } else {
+//   // module.exports = oldBrowser
+// }
 
 function randomBytes (size, cb) {
   // phantomjs needs to throw
@@ -22,7 +27,7 @@ function randomBytes (size, cb) {
   // This will not work in older browsers.
   // See https://developer.mozilla.org/en-US/docs/Web/API/window.crypto.getRandomValues
   if (size > 0) {  // getRandomValues fails on IE if size == 0
-    crypto.getRandomValues(rawBytes)
+    getRandomValues(rawBytes)
   }
 
   // XXX: phantomjs doesn't like a buffer being passed here
@@ -36,3 +41,24 @@ function randomBytes (size, cb) {
 
   return bytes
 }
+
+
+
+
+
+
+function getRandomValues (abv) {
+  var l = abv.length
+  while (l--) {
+    abv[l] = Math.floor(randomFloat() * 256)
+  }
+  return abv
+}
+
+function randomFloat() {
+  return twister.random()
+}
+
+
+
+module.exports = randomBytes
